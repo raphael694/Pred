@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Predictor Pro - Rapha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020617; color: white; font-family: 'Segoe UI', sans-serif; }
+        .glow-text { text-shadow: 0 0 20px rgba(34, 211, 238, 0.8); }
+        .glass-card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .digital { font-family: 'Courier New', Courier, monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="main-app" class="w-full max-w-md space-y-4">
+        
+        <div class="glass-card p-4 rounded-3xl flex justify-between items-center px-6">
+            <div>
+                <p class="text-[10px] font-bold text-cyan-500 uppercase tracking-[0.2em]">Heure Actuelle</p>
+                <div id="live-clock" class="text-2xl font-black digital">00:00:00</div>
+            </div>
+            <div class="text-right">
+                <button onclick="location.reload()" class="bg-slate-800 p-2 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[3rem] shadow-2xl relative overflow-hidden border-t-2 border-cyan-500/20">
+            <div class="space-y-8">
+                <div class="text-center">
+                    <label class="text-slate-500 text-[11px] font-black block mb-3 tracking-[0.3em] uppercase italic">🕒 Heure du dernier 2.00x</label>
+                    <input type="time" id="start-time" step="1" oninput="calculate()" class="w-full bg-slate-950/50 text-white text-4xl text-center py-6 rounded-[2rem] border border-slate-800 outline-none focus:border-cyan-500/50 font-black">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="text-center">
+                        <label class="text-slate-600 text-[9px] font-bold block mb-2 uppercase italic">C1</label>
+                        <input type="number" id="c1" value="1.5" step="0.1" oninput="calculate()" class="w-full bg-slate-900/50 text-white py-3 rounded-xl text-center border border-slate-800 outline-none text-lg font-bold">
+                    </div>
+                    <div class="text-center">
+                        <label class="text-slate-600 text-[9px] font-bold block mb-2 uppercase italic">C2</label>
+                        <input type="number" id="c2" value="2.0" step="0.1" oninput="calculate()" class="w-full bg-slate-900/50 text-white py-3 rounded-xl text-center border border-slate-800 outline-none text-lg font-bold">
+                    </div>
+                    <div class="text-center">
+                        <label class="text-slate-600 text-[9px] font-bold block mb-2 uppercase italic text-cyan-500">C3</label>
+                        <input type="number" id="c3" value="1.2" step="0.1" oninput="calculate()" class="w-full bg-slate-900/50 text-white py-3 rounded-xl text-center border border-cyan-500/30 outline-none text-lg font-bold">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/40 rounded-[2.5rem] p-6 border border-slate-800/50 text-center relative">
+                    <div class="text-cyan-500 mb-2 flex items-center justify-center gap-2">
+                        <span class="text-[10px] font-black uppercase tracking-[0.4em]">Prochain Signal 2.00x</span>
+                    </div>
+                    <div id="result" class="text-6xl font-black digital text-cyan-400 glow-text">--:--:--</div>
+                    <div id="ecart-val" class="mt-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest">Écart calculé: +0s</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center px-6 text-[10px] text-slate-600 font-bold uppercase tracking-tighter">
+            <p>© ALGORITHME V8.0</p>
+            <p class="text-cyan-800 italic">Aviator Algorithm</p>
+        </div>
+    </div>
+
+    <div class="mt-8 text-slate-500/50 text-xs font-black tracking-[0.8em] uppercase">
+        By Rapha
+    </div>
+
+    <script>
+        // Horloge temps réel
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = 
+                now.getHours().toString().padStart(2, '0') + ":" + 
+                now.getMinutes().toString().padStart(2, '0') + ":" + 
+                now.getSeconds().toString().padStart(2, '0');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Fametrahana ora automatique amin'ny voalohany
+        window.onload = () => {
+            const n = new Date();
+            document.getElementById('start-time').value = 
+                `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+            calculate(); // Tonga dia mikajy
+        };
+
+        function calculate() {
+            try {
+                const timeStr = document.getElementById('start-time').value;
+                const c1 = parseFloat(document.getElementById('c1').value) || 0;
+                const c2 = parseFloat(document.getElementById('c2').value) || 0;
+                const c3 = parseFloat(document.getElementById('c3').value) || 0;
+
+                const parts = timeStr.split(':');
+                let h = parseInt(parts[0]);
+                let m = parseInt(parts[1]);
+                let s = parseInt(parts[2]) || 0;
+
+                // --- ALGORITHME RAPHA V8 ---
+                // Eto no ovaina ny formule raha misy manokana tianao
+                let ecartTotal = Math.floor((c1 * 15) + (c2 * 10) + (c3 * 5));
+                
+                if(ecartTotal < 30) ecartTotal = 45; // Minimum 45s
+
+                let startSec = (h * 3600) + (m * 60) + s;
+                let finalSec = startSec + ecartTotal;
+
+                let resH = Math.floor(finalSec / 3600) % 24;
+                let resM = Math.floor((finalSec % 3600) / 60);
+                let resS = finalSec % 60;
+
+                document.getElementById('result').innerText = 
+                    `${String(resH).padStart(2,'0')}:${String(resM).padStart(2,'0')}:${String(resS).padStart(2,'0')}`;
+                document.getElementById('ecart-val').innerText = `Écart calculé: +${ecartTotal} secondes`;
+
+            } catch(e) {
+                document.getElementById('result').innerText = "00:00:00";
+            }
+        }
+    </script>
+</body>
+</html>
